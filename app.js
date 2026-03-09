@@ -1,9 +1,9 @@
 const express = require("express");
 
-const connectDB = require("./config/database");
+const connectDB = require("./src/config/database");
 
-const workspaceRoutes = require("./routes/workspaceRoutes");
-const proxyRoutes = require("./routes/proxyRoutes");
+const workspaceRoutes = require("./src/routes/workspaceRoutes");
+const proxyRoutes = require("./src/routes/proxyRoutes");
 
 const app = express();
 
