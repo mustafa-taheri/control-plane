@@ -4,12 +4,13 @@ const connectDB = require("./src/config/database");
 
 const workspaceRoutes = require("./src/routes/workspaceRoutes");
 const proxyRoutes = require("./src/routes/proxyRoutes");
+const authRoutes = require("./src/routes/authRoutes");
 
 const app = express();
 
 app.use(express.json());
-
 connectDB();
+app.use("/auth", authRoutes);
 
 app.use("/workspaces", workspaceRoutes);
 

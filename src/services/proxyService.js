@@ -2,7 +2,7 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const Workspace = require("../models/Workspace");
 
 async function resolveWorkspace(req) {
-  const workspaceId = req.params.workspaceId;
+  const workspaceId = req.user.workspaceId;
 
   const workspace = await Workspace.findById(workspaceId);
 
