@@ -17,6 +17,9 @@ const workspaceSchema = new mongoose.Schema(
       enum: ["starting", "running", "failed"],
       default: "starting",
     },
+    serviceAccountToken: {
+      type: String,
+    },
   },
   { timestamps: true },
 );
