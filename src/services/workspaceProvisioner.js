@@ -2,6 +2,10 @@ const docker = require("../config/docker");
 const Workspace = require("../models/Workspace");
 const allocatePort = require("./portAllocator");
 const waitForZenML = require("../utils/waitForZenML");
+const loginAdmin = require("./zenmlAuthService");
+const createServiceAccount = require("./zenmlServiceAccountService");
+const createApiKey = require("./zenmlApiKeyService");
+const { generateAdminUser, generatePassword } = require("../utils/credentials");
 
 async function createWorkspace(tenantName) {
   const slug = tenantName.toLowerCase().replace(/\s+/g, "-");
@@ -9,11 +13,18 @@ async function createWorkspace(tenantName) {
   const port = await allocatePort();
 
   const containerName = `zenml-${slug}`;
+  const adminUsername = generateAdminUser(slug);
+  const adminPassword = generatePassword();
 
   const container = await docker.createContainer({
     Image: "zenml/zenml-server",
 
     name: containerName,
+
+    Env: [
+      `ZENML_SERVER_ADMIN_USERNAME=${adminUsername}`,
+      `ZENML_SERVER_ADMIN_PASSWORD=${adminPassword}`,
+    ],
 
     ExposedPorts: {
       "8080/tcp": {},
@@ -32,6 +43,12 @@ async function createWorkspace(tenantName) {
 
   const zenmlWorkspace = await waitForZenML(url);
 
+  const adminToken = await loginAdmin(url, adminUsername, adminPassword);
+
+  const serviceAccountId = await createServiceAccount(url, adminToken);
+
+  const apiKey = await createApiKey(url, adminToken, serviceAccountId);
+
   const workspace = await Workspace.create({
     tenantName,
     slug,
@@ -39,6 +56,8 @@ async function createWorkspace(tenantName) {
     url,
     containerName,
     zenmlWorkspace,
+    serviceAccountToken: apiKey,
+    serviceAccountId,
     status: "running",
   });
 

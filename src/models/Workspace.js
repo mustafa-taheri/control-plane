@@ -4,7 +4,8 @@ const workspaceSchema = new mongoose.Schema(
   {
     tenantName: { type: String, required: true },
     slug: { type: String, required: true },
-
+    adminUserName: { type: String, required: true },
+    adminPassword: { type: String, required: true },
     port: { type: Number, required: true },
     url: { type: String, required: true },
 
@@ -18,6 +19,9 @@ const workspaceSchema = new mongoose.Schema(
       default: "starting",
     },
     serviceAccountToken: {
+      type: String,
+    },
+    serviceAccountId: {
       type: String,
     },
   },
