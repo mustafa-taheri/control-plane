@@ -1,6 +1,6 @@
 const express = require("express");
 
-const addUserToWorkspace = require("../services/workspaceUserProvisioner");
+const addUserToWorkspace = require("../services/workspaceUserProvisionService");
 
 const router = express.Router();
 

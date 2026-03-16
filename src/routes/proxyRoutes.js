@@ -10,6 +10,6 @@ router.use(authMiddleware);
 
 router.use(rbacMiddleware);
 
-router.use("/*", zenmlProxy());
+router.use("/{*splat}", zenmlProxy());
 
 module.exports = router;

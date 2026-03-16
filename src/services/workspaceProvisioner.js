@@ -11,13 +11,14 @@ async function createWorkspace(tenantName) {
   const slug = tenantName.toLowerCase().replace(/\s+/g, "-");
 
   const port = await allocatePort();
+  console.log("port ==>", port);
 
   const containerName = `zenml-${slug}`;
   const adminUsername = generateAdminUser(slug);
   const adminPassword = generatePassword();
 
   const container = await docker.createContainer({
-    Image: "zenml/zenml-server",
+    Image: "zenmldocker/zenml-server",
 
     name: containerName,
 
@@ -37,17 +38,27 @@ async function createWorkspace(tenantName) {
     },
   });
 
+  console.log("Starting container");
+
   await container.start();
 
   const url = `http://localhost:${port}`;
 
+  console.log("Waiting for ZenML server to start");
+  console.log("url ==>", url);
+
   const zenmlWorkspace = await waitForZenML(url);
+  console.log("ZenML server started");
+  console.log("zenmlWorkspace ==>", zenmlWorkspace);
 
   const adminToken = await loginAdmin(url, adminUsername, adminPassword);
+  console.log("adminToken ==>", adminToken);
 
   const serviceAccountId = await createServiceAccount(url, adminToken);
+  console.log("serviceAccountId ==>", serviceAccountId);
 
   const apiKey = await createApiKey(url, adminToken, serviceAccountId);
+  console.log("apiKey ==>", apiKey);
 
   const workspace = await Workspace.create({
     tenantName,
@@ -60,7 +71,7 @@ async function createWorkspace(tenantName) {
     serviceAccountId,
     status: "running",
   });
-
+  console.log("workspace ==>", workspace);
   return workspace;
 }
 
