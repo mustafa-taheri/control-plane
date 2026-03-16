@@ -6,6 +6,7 @@ const loginAdmin = require("./zenmlAuthService");
 const createServiceAccount = require("./zenmlServiceAccountService");
 const createApiKey = require("./zenmlApiKeyService");
 const { generateAdminUser, generatePassword } = require("../utils/credentials");
+const createAdminUser = require("./createAdminUser");
 
 async function createWorkspace(tenantName) {
   const slug = tenantName.toLowerCase().replace(/\s+/g, "-");
@@ -22,10 +23,10 @@ async function createWorkspace(tenantName) {
 
     name: containerName,
 
-    Env: [
-      `ZENML_SERVER_ADMIN_USERNAME=${adminUsername}`,
-      `ZENML_SERVER_ADMIN_PASSWORD=${adminPassword}`,
-    ],
+    // Env: [
+    //   `ZENML_DEFAULT_USER_NAME=${adminUsername}`,
+    //   `ZENML_DEFAULT_USER_PASSWORD=${adminPassword}`,
+    // ],
 
     ExposedPorts: {
       "8080/tcp": {},
@@ -51,8 +52,17 @@ async function createWorkspace(tenantName) {
   console.log("ZenML server started");
   console.log("zenmlWorkspace ==>", zenmlWorkspace);
 
-  const adminToken = await loginAdmin(url, adminUsername, adminPassword);
-  console.log("adminToken ==>", adminToken);
+  // const adminUserId = await createAdminUser(url, adminUsername, adminPassword);
+  // console.log("adminUserId ==>", adminUserId);
+
+  // const adminToken = await loginAdmin(url, adminUsername, adminPassword);
+  // console.log("adminToken ==>", adminToken);
+
+  const { adminUserId, adminToken } = await bootstrapAdminUser(
+    url,
+    adminUsername,
+    adminPassword,
+  );
 
   const serviceAccountId = await createServiceAccount(url, adminToken);
   console.log("serviceAccountId ==>", serviceAccountId);
@@ -73,6 +83,24 @@ async function createWorkspace(tenantName) {
   });
   console.log("workspace ==>", workspace);
   return workspace;
+}
+
+async function bootstrapAdminUser(url, adminUsername, adminPassword) {
+  for (let i = 0; i < 20; i++) {
+    try {
+      const adminUserId = await createAdminUser(
+        url,
+        adminUsername,
+        adminPassword,
+      );
+      console.log("adminUserId ==>", adminUserId);
+      const adminToken = await loginAdmin(url, adminUsername, adminPassword);
+      console.log("adminToken ==>", adminToken);
+      return { adminUserId, adminToken };
+    } catch (error) {
+      console.error("Error creating admin user:", error.message);
+    }
+  }
 }
 
 module.exports = createWorkspace;
